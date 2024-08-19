@@ -31,10 +31,10 @@ func GormInit() (*gorm.DB, error) {
 
 	err = database.AutoMigrate(&models.User{})
 	if err != nil {
-		fmt.Println(err)
+		log.Fatalf(err.Error())
 	}
+
 	Initialize(database)
-	fmt.Println("admin not found")
 
 	return database, nil
 }
@@ -53,7 +53,7 @@ func Initialize(db *gorm.DB) {
 
 			admin := models.User{
 				Email:    "admin@domain.com",
-				Password: "admin",
+				Password: "Passw0rd",
 				Role:     "admin",
 				Disabled: false,
 			}
@@ -64,7 +64,6 @@ func Initialize(db *gorm.DB) {
 			if result.Error != nil {
 				log.Fatalf("Failed to create admin user: %v", result.Error)
 			}
-			fmt.Println("admin created")
 		}
 	}
 }

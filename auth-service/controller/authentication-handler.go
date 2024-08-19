@@ -23,19 +23,19 @@ func NewAuthenticationHandler() *AuthenticationHandler {
 func AddAuthServiceRoutes(e *echo.Echo) {
 	h := NewAuthenticationHandler()
 
-	e.POST("/api/auth/users", h.CreateUserHandler)
-	e.GET("/api/auth/users", h.GetUsersHandler)
-	// e.POST("/api/auth/login", h.LoginHandler)
-	// e.POST("/api/auth/logout", h.LogoutHandler)
-	// e.POST("/api/auth/forgot-password", h.ForgotPasswordHandler)
-	// e.POST("/api/auth/reset-password", h.ResetPasswordHandler)
-	// e.GET("/api/auth/verify-account", h.VerifyAccountHandler)
-	// e.PUT("/api/auth/update-profile", h.UpdateProfileHandler)
-	// e.GET("/api/auth/profile", h.GetUserProfileHandler)
-	// e.POST("/api/auth/refresh-token", h.RefreshTokenHandler)
+	e.POST("/users", h.CreateUserHandler)
+	e.GET("/users", h.GetUsersHandler)
+	e.POST("/login", h.LoginHandler)
+	// e.POST("/logout", h.LogoutHandler)
+	// e.POST("/forgot-password", h.ForgotPasswordHandler)
+	// e.POST("/reset-password", h.ResetPasswordHandler)
+	// e.GET("/verify-account", h.VerifyAccountHandler)
+	// e.PUT("/update-profile", h.UpdateProfileHandler)
+	// e.GET("/profile", h.GetUserProfileHandler)
+	// e.POST("/refresh-token", h.RefreshTokenHandler)
 
 	// e.POST("/login", h.loginHandler)
-	// e.POST("/register", h.register)
+	// e.POST("/register", h.register) don
 	// e.POST("/logout", h.logout)
 	// e.POST("/create-admin", h.CreateAdmin)
 	// e.GET("/is-admin/:id/:role", h.IsAdmin)
@@ -86,4 +86,30 @@ func (h *AuthenticationHandler) GetUsersHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string][]models.User{
 		"users": users,
 	})
+}
+
+func (h *AuthenticationHandler) LoginHandler(c echo.Context) error {
+
+	var user models.User
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"Error": "Invalid request body",
+		})
+	}
+
+	err := validators.LoginValidation(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, err.Error())
+	}
+
+	token, id, err := h.svc.LoginUser(&user)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"Error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"token": token, "id": id})
 }

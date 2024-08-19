@@ -7,4 +7,5 @@ import (
 type UserServiceContract interface {
 	AddUser(user *models.User) error
 	GetUsers(users *[]models.User) error
+	LoginUser(user *models.User) (string, string, error)
 }

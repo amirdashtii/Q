@@ -7,4 +7,5 @@ import (
 type UserRepositoryContracts interface {
 	AddUser(user *models.User) error
 	GetUsers(users *[]models.User) error
+	LoginUser(email string) (*models.User, error)
 }
