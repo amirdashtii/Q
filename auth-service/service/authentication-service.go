@@ -70,6 +70,46 @@ func (u *AuthenticationService) LoginUser(user *models.User) (string, error) {
 	return token, nil
 }
 
+func (u *AuthenticationService) GetUserProfile(user *models.User) error {
+	return u.db.GetUserById(user)
+}
+
+func (u *AuthenticationService) UpdateUserProfile(user *models.User) error {
+
+	updateItem := make(map[string]interface{})
+
+	if user.FirstName != "" {
+		updateItem["first_name"] = user.FirstName
+	}
+
+	if user.LastName != "" {
+		updateItem["last_name"] = user.LastName
+	}
+
+	if user.Email != "" {
+		updateItem["email"] = user.Email
+	}
+
+	if user.PhoneNumber != nil {
+		updateItem["phone_number"] = user.PhoneNumber
+	}
+
+	return u.db.UpdateUserById(&user.ID, updateItem)
+}
+
+func (u *AuthenticationService) ChangePassword(user *models.User) error {
+
+	updateItem := make(map[string]interface{})
+
+	hashPassword, err := HashPassword(user.Password)
+	if err != nil {
+		return err
+	}
+	updateItem["password"] = hashPassword
+
+	return u.db.UpdateUserById(&user.ID, updateItem)
+}
+
 func (u *AuthenticationService) GetUsers(currentUserID *uuid.UUID, users *[]models.User) error {
 
 	err := u.IsAdmin(*currentUserID)

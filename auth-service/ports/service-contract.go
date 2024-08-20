@@ -8,6 +8,11 @@ import (
 type UserServiceContract interface {
 	RegisterUser(user *models.User) error
 	LoginUser(user *models.User) (string, error)
+
+	GetUserProfile(user *models.User) error
+	UpdateUserProfile(user *models.User) error
+	ChangePassword(user *models.User) error
+
 	GetUsers(currentUserID *uuid.UUID, users *[]models.User) error
 	GetUserById(currentUserID *uuid.UUID, user *models.User) error
 	UpdateUserById(currentUserID *uuid.UUID, user *models.User) error

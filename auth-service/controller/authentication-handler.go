@@ -31,9 +31,9 @@ func AddAuthServiceRoutes(e *echo.Echo) {
 	// e.POST("/auth/refresh-token", h.RefreshTokenHandler)
 
 	// User Routes
-	// e.GET("/user/profile", h.GetUserProfileHandler)
-	// e.PATCH("/user/profile", h.UpdateUserProfileHandler)
-	// e.PATCH("/user/change-password", h.ChangePasswordHandler)
+	e.GET("/user/profile", h.GetUserProfileHandler, middleware.AuthMiddleware)
+	e.PATCH("/user/profile", h.UpdateUserProfileHandler, middleware.AuthMiddleware)
+	e.PATCH("/user/change-password", h.ChangePasswordHandler, middleware.AuthMiddleware)
 
 	// Admin Routes
 	e.GET("/admin/users", h.GetUsersHandler, middleware.AuthMiddleware)
@@ -43,13 +43,6 @@ func AddAuthServiceRoutes(e *echo.Echo) {
 	e.PATCH("/admin/users/:user_id/deactivate", h.DeactivateUserHandler, middleware.AuthMiddleware)
 	e.PATCH("/admin/users/:user_id/activate", h.ActivateUserHandler, middleware.AuthMiddleware)
 	e.DELETE("/admin/users/:user_id", h.DeleteUserHandler, middleware.AuthMiddleware)
-
-	// e.POST("/logout", h.logout)
-	// e.POST("/create-admin", h.CreateAdmin)
-	// e.GET("/is-admin/:id/:role", h.IsAdmin)
-	// e.GET("/verify/:number/:id", h.Verify)
-	// e.POST("/disable-user", h.DisableUser)
-	// e.GET("/test", h.Test, middleware.AuthMiddleware)
 }
 
 func (h *AuthenticationHandler) RegisterHandler(c echo.Context) error {
@@ -106,6 +99,105 @@ func (h *AuthenticationHandler) LoginHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, map[string]string{
 		"token": token})
+}
+
+func (h *AuthenticationHandler) GetUserProfileHandler(c echo.Context) error {
+	id := c.Get("id").(string)
+	currentUserID, err := uuid.Parse(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	var user models.User
+	user.ID = currentUserID
+
+	err = h.svc.GetUserProfile(&user)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]models.User{
+		"user": user,
+	})
+}
+
+func (h *AuthenticationHandler) UpdateUserProfileHandler(c echo.Context) error {
+	id := c.Get("id").(string)
+	currentUserID, err := uuid.Parse(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	var user models.User
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+	}
+	user.ID = currentUserID
+
+	err = validators.UpdateValidation(&user)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	err = h.svc.UpdateUserProfile(&user)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "user successfully updated",
+	})
+}
+
+func (h *AuthenticationHandler) ChangePasswordHandler(c echo.Context) error {
+	id := c.Get("id").(string)
+	currentUserID, err := uuid.Parse(id)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	var user models.User
+	if err := c.Bind(&user); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "invalid request body",
+		})
+	}
+	user.ID = currentUserID
+
+	err = validators.PasswordValidation(user.Password)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	err = h.svc.ChangePassword(&user)
+
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{
+			"error": err.Error(),
+		})
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "password successfully changed",
+	})
 }
 
 func (h *AuthenticationHandler) GetUsersHandler(c echo.Context) error {
