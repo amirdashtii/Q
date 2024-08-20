@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"os"
 	"time"
 
 	"github.com/amirdashtii/Q/auth-service/models"
@@ -13,14 +14,17 @@ import (
 )
 
 type AuthenticationService struct {
-	db ports.UserRepositoryContracts
+	db    ports.UserRepositoryContracts
+	redis ports.InMemoryRespositoryContracts
 }
 
 func NewAuthenticationService() *AuthenticationService {
 	db := repositories.NewPostgres()
+	redis := repositories.RedisInit()
 
 	return &AuthenticationService{
-		db: db,
+		db:    db,
+		redis: redis,
 	}
 }
 
@@ -62,11 +66,11 @@ func (u *AuthenticationService) LoginUser(user *models.User) (string, string, er
 		return "", "", err
 	}
 
-	// err = u.redis.AddToken(token)
+	err = u.redis.AddToken(token)
 
-	// if err != nil {
-	// 	return "", "", err
-	// }
+	if err != nil {
+		return "", "", err
+	}
 
 	return token, foundedUser.ID.String(), nil
 }
@@ -80,29 +84,12 @@ func CheckPasswordHash(password, hash string) bool {
 	return err == nil
 }
 
-type Claims struct {
-	ID uuid.UUID `json:"id"`
-	jwt.RegisteredClaims
-}
-type Credentials struct {
-	ID       uuid.UUID `json:"id"`
-	Password string    `json:"password"`
-}
-
-var jwtKey = []byte("my_secret_key")
-
 func GenerateToken(id uuid.UUID) (string, error) {
-	var creds Credentials
-	expirationTime := time.Now().Add(5 * time.Minute)
-	claims := &Claims{
-		ID: creds.ID,
-		RegisteredClaims: jwt.RegisteredClaims{
-			ExpiresAt: jwt.NewNumericDate(expirationTime),
-		},
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(jwtKey)
+	token := jwt.New(jwt.SigningMethodHS256)
+	claims := token.Claims.(jwt.MapClaims)
+	claims["user_id"] = id
+	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
+	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
 	if err != nil {
 		return "", err
 	}

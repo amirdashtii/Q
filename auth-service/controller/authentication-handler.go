@@ -1,6 +1,7 @@
 package controller
 
 import (
+
 	"net/http"
 
 	"github.com/amirdashtii/Q/auth-service/controller/validators"
@@ -22,20 +23,25 @@ func NewAuthenticationHandler() *AuthenticationHandler {
 }
 func AddAuthServiceRoutes(e *echo.Echo) {
 	h := NewAuthenticationHandler()
+	// Authentication Routes
+	e.POST("/auth/register", h.RegisterHandler)
+	e.POST("/auth/login", h.LoginHandler)
+	// e.POST("/auth/logout", h.LogoutHandler)
+	// e.POST("/auth/refresh-token", h.RefreshTokenHandler)
 
-	e.POST("/users", h.CreateUserHandler)
-	e.GET("/users", h.GetUsersHandler)
-	e.POST("/login", h.LoginHandler)
-	// e.POST("/logout", h.LogoutHandler)
-	// e.POST("/forgot-password", h.ForgotPasswordHandler)
-	// e.POST("/reset-password", h.ResetPasswordHandler)
-	// e.GET("/verify-account", h.VerifyAccountHandler)
-	// e.PUT("/update-profile", h.UpdateProfileHandler)
-	// e.GET("/profile", h.GetUserProfileHandler)
-	// e.POST("/refresh-token", h.RefreshTokenHandler)
+	// User Routes
+	// e.GET("/user/profile", h.GetUserProfileHandler)
+	// e.PATCH("/user/profile", h.UpdateUserProfileHandler)
+	// e.PATCH("/user/change-password", h.ChangePasswordHandler)
 
-	// e.POST("/login", h.loginHandler)
-	// e.POST("/register", h.register) don
+	// Admin Routes
+	e.GET("/admin/users", h.GetUsersHandler)
+	// e.GET("/admin/users/:user_id", h.GetUserByIdHandler)
+	// e.PATCH("/admin/users/:user_id", h.UpdateUserByIdHandler)
+	// e.PATCH("/admin/users/:user_id/promote", h.PromoteUserToAdminHandler, middleware.AuthMiddleware)
+	// e.PATCH("/admin/users/:user_id/deactivate", h.DeactivateUserHandler)
+	// e.DELETE("/admin/users/:user_id", h.DeleteUserHandler)
+
 	// e.POST("/logout", h.logout)
 	// e.POST("/create-admin", h.CreateAdmin)
 	// e.GET("/is-admin/:id/:role", h.IsAdmin)
@@ -44,7 +50,7 @@ func AddAuthServiceRoutes(e *echo.Echo) {
 	// e.GET("/test", h.Test, middleware.AuthMiddleware)
 }
 
-func (h *AuthenticationHandler) CreateUserHandler(c echo.Context) error {
+func (h *AuthenticationHandler) RegisterHandler(c echo.Context) error {
 
 	var user models.User
 
