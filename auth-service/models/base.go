@@ -8,9 +8,9 @@ import (
 )
 
 type DBModel struct {
-	ID         uuid.UUID       `gorm:"primaryKey;type:uuid" json:"id"`
-	CreatedAt  time.Time       `json:"created_at"`
-	ModifiedAt *time.Time      `json:"modified_at"`
+	ID        uuid.UUID       `gorm:"primaryKey;type:uuid" json:"id"`
+	CreatedAt time.Time       `json:"created_at"`
+	UpdatedAt *time.Time      `json:"updated_at"`
 	DeletedAt *gorm.DeletedAt `json:"deleted_at"`
 }
 
