@@ -23,6 +23,7 @@ go.sum
 .vscode/
 *.swp
 *.swo
+.DS_Store
 
 # Logs
 *.log
