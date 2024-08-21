@@ -7,17 +7,19 @@ import (
 
 type UserServiceContract interface {
 	RegisterUser(user *models.User) error
-	LoginUser(user *models.User) (string, error)
+	LoginUser(user *models.User) (string, string, error)
+	Logout(token string) error
+	RefreshToken(refreshToken string) (string, error)
 
 	GetUserProfile(user *models.User) error
 	UpdateUserProfile(user *models.User) error
 	ChangePassword(user *models.User) error
 
-	GetUsers(currentUserID *uuid.UUID, users *[]models.User) error
-	GetUserById(currentUserID *uuid.UUID, user *models.User) error
-	UpdateUserById(currentUserID *uuid.UUID, user *models.User) error
-	PromoteUserToAdmin(currentUserID, userID *uuid.UUID) error
-	DeactivateUser(currentUserID, userID *uuid.UUID) error
-	ActivateUser(currentUserID, userID *uuid.UUID) error
-	DeleteUser(currentUserID *uuid.UUID, user *models.User) error
+	GetUsers(users *[]models.User) error
+	GetUserById(user *models.User) error
+	UpdateUserById(user *models.User) error
+	PromoteUserToAdmin(userID *uuid.UUID) error
+	DeactivateUser(userID *uuid.UUID) error
+	ActivateUser(userID *uuid.UUID) error
+	DeleteUser(user *models.User) error
 }

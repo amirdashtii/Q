@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/amirdashtii/Q/auth-service/models"
@@ -14,13 +13,9 @@ func (p *Postgres) RegisterUser(user *models.User) error {
 	return result.Error
 }
 
-func (p *Postgres) LoginUser(email string) (*models.User, error) {
-
-	var fundedUser models.User
-	if err := p.db.Where("email = ? ", email).First(&fundedUser).Error; err != nil {
-		return nil, err
-	}
-	return &fundedUser, nil
+func (p *Postgres) LoginUser(user *models.User) error {
+	result := p.db.Where("email = ? ", user.Email).First(user)
+	return result.Error
 }
 
 func (p *Postgres) GetUsers(users *[]models.User) error {
@@ -45,20 +40,25 @@ func (p *Postgres) DeleteUser(user *models.User) error {
 	return result.Error
 }
 
-func (r *RedisDB) AddToken(token string) error {
+func (r *RedisDB) AddToken(refreshToken, id string) error {
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	err := r.client.Set(ctx, token, true, 0).Err()
+	err := r.client.Set(ctx, id, refreshToken, 7*24*time.Hour).Err()
 	if err != nil {
-		fmt.Printf("Error connecting to Redis: %v\n", err)
 		return err
 	}
 	return nil
 }
 
-func (r *RedisDB) TokenReceiver(token string) (string, error) {
-	ctx := context.Background()
-	val, err := r.client.Get(ctx, token).Result()
+func (r *RedisDB) RevokeToken(token string) error {
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	err := r.client.Set(ctx, token, false, 0).Err()
+	return err
+}
 
-	return val, err
+func (r *RedisDB) ReceiverToken(claims *models.Claims) (string, error) {
+
+	ctx := context.Background()
+	return r.client.Get(ctx, claims.ID).Result()
 }

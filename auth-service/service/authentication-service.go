@@ -2,13 +2,10 @@ package service
 
 import (
 	"errors"
-	"os"
-	"time"
 
 	"github.com/amirdashtii/Q/auth-service/models"
 	"github.com/amirdashtii/Q/auth-service/ports"
 	"github.com/amirdashtii/Q/auth-service/repositories"
-	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -38,36 +35,65 @@ func (u *AuthenticationService) RegisterUser(user *models.User) error {
 	return err
 }
 
-func (u *AuthenticationService) LoginUser(user *models.User) (string, error) {
+func (u *AuthenticationService) LoginUser(user *models.User) (string, string, error) {
 
-	foundedUser, err := u.db.LoginUser(user.Email)
+	inpPassword := user.Password
+	err := u.db.LoginUser(user)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	if foundedUser.Disabled {
-		return "", errors.New("your account is temporarily disabled by an admin")
+	if user.Disabled {
+		return "", "", errors.New("your account is temporarily disabled by an admin")
 	}
 
-	decodedFoundedPassword := CheckPasswordHash(user.Password, foundedUser.Password)
+	decodedFoundedPassword := CheckPasswordHash(inpPassword, user.Password)
 
 	if !decodedFoundedPassword {
 		err := errors.New("email or password mismatch")
-		return "", err
+		return "", "", err
 	}
 
-	token, err := GenerateToken(foundedUser.DBModel.ID)
+	accessToken, err := GenerateAccessToken(user.ID.String(), user.Role)
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken, err := GenerateRefreshToken(user.ID.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	err = u.redis.AddToken(refreshToken, user.ID.String())
+	if err != nil {
+		return "", "", err
+	}
+
+	return accessToken, refreshToken, nil
+}
+
+func (u *AuthenticationService) Logout(token string) error {
+	err := u.redis.RevokeToken(token)
+
+	return err
+}
+
+func (u *AuthenticationService) RefreshToken(refreshToken string) (string, error) {
+	claims, err := ValidateToken(refreshToken)
 	if err != nil {
 		return "", err
 	}
 
-	err = u.redis.AddToken(token)
-
-	if err != nil {
+	storedToken, err := u.redis.ReceiverToken(claims)
+	if err != nil || storedToken != refreshToken {
 		return "", err
 	}
 
-	return token, nil
+	newAccessToken, err := GenerateAccessToken(claims.ID, claims.Role)
+	if err != nil {
+		return "", err
+	}
+	return newAccessToken, nil
 }
 
 func (u *AuthenticationService) GetUserProfile(user *models.User) error {
@@ -110,31 +136,15 @@ func (u *AuthenticationService) ChangePassword(user *models.User) error {
 	return u.db.UpdateUserById(&user.ID, updateItem)
 }
 
-func (u *AuthenticationService) GetUsers(currentUserID *uuid.UUID, users *[]models.User) error {
-
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
-
+func (u *AuthenticationService) GetUsers(users *[]models.User) error {
 	return u.db.GetUsers(users)
 }
 
-func (u *AuthenticationService) GetUserById(currentUserID *uuid.UUID, user *models.User) error {
-
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
-
+func (u *AuthenticationService) GetUserById(user *models.User) error {
 	return u.db.GetUserById(user)
 }
 
-func (u *AuthenticationService) UpdateUserById(currentUserID *uuid.UUID, user *models.User) error {
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
+func (u *AuthenticationService) UpdateUserById(user *models.User) error {
 
 	updateItem := make(map[string]interface{})
 
@@ -165,12 +175,8 @@ func (u *AuthenticationService) UpdateUserById(currentUserID *uuid.UUID, user *m
 	return u.db.UpdateUserById(&user.ID, updateItem)
 }
 
-func (u *AuthenticationService) PromoteUserToAdmin(currentUserID, userID *uuid.UUID) error {
+func (u *AuthenticationService) PromoteUserToAdmin(userID *uuid.UUID) error {
 
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
 	var user models.User
 	user.ID = *userID
 
@@ -181,12 +187,8 @@ func (u *AuthenticationService) PromoteUserToAdmin(currentUserID, userID *uuid.U
 	return u.db.UpdateUserById(&user.ID, updateItem)
 }
 
-func (u *AuthenticationService) DeactivateUser(currentUserID, userID *uuid.UUID) error {
+func (u *AuthenticationService) DeactivateUser(userID *uuid.UUID) error {
 
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
 	var user models.User
 	user.ID = *userID
 
@@ -197,12 +199,8 @@ func (u *AuthenticationService) DeactivateUser(currentUserID, userID *uuid.UUID)
 	return u.db.UpdateUserById(&user.ID, updateItem)
 }
 
-func (u *AuthenticationService) ActivateUser(currentUserID, userID *uuid.UUID) error {
+func (u *AuthenticationService) ActivateUser(userID *uuid.UUID) error {
 
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
 	var user models.User
 	user.ID = *userID
 
@@ -213,47 +211,16 @@ func (u *AuthenticationService) ActivateUser(currentUserID, userID *uuid.UUID) e
 	return u.db.UpdateUserById(&user.ID, updateItem)
 }
 
-func (u *AuthenticationService) DeleteUser(currentUserID *uuid.UUID, user *models.User) error {
-	err := u.IsAdmin(*currentUserID)
-	if err != nil {
-		return err
-	}
-
+func (u *AuthenticationService) DeleteUser(user *models.User) error {
 	return u.db.DeleteUser(user)
-}
-
-func (u *AuthenticationService) IsAdmin(id uuid.UUID) error {
-	var user models.User
-	user.ID = id
-	err := u.db.GetUserById(&user)
-	if err != nil {
-		return err
-	}
-
-	if user.Role != "admin" {
-		return errors.New("access denied. admin privileges are required to perform this action")
-	}
-
-	return nil
 }
 
 func HashPassword(password string) (string, error) {
 	bytes, err := bcrypt.GenerateFromPassword([]byte(password), 14)
 	return string(bytes), err
 }
+
 func CheckPasswordHash(password, hash string) bool {
 	err := bcrypt.CompareHashAndPassword([]byte(hash), []byte(password))
 	return err == nil
-}
-
-func GenerateToken(id uuid.UUID) (string, error) {
-	token := jwt.New(jwt.SigningMethodHS256)
-	claims := token.Claims.(jwt.MapClaims)
-	claims["user_id"] = id
-	claims["exp"] = time.Now().Add(time.Hour * 72).Unix()
-	tokenString, err := token.SignedString([]byte(os.Getenv("JWT_SECRET_KEY")))
-	if err != nil {
-		return "", err
-	}
-	return tokenString, nil
 }

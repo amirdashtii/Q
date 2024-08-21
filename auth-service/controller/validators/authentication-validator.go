@@ -106,3 +106,11 @@ func PhoneNumberValidation(phoneNumber string) error {
 	}
 	return nil
 }
+
+func TokenValidation(token string) error {
+	if token == "" {
+		err := errors.New("no valid token")
+		return err
+	}
+	return nil
+}
