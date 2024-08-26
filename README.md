@@ -1,4 +1,4 @@
-# Super App Documentation
+# Q App Documentation
 
 ## Overview
 
