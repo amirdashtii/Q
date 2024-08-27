@@ -147,3 +147,47 @@ func (s *FlightService) GetFlights(flightReq *models.FlightReq, flights *[]model
 
 	return s.db.GetFlights(flightReq, flights)
 }
+
+func (s *FlightService) GetFlightByID(flight *models.Flight) error {
+	return s.db.GetFlightByID(flight)
+}
+
+func (s *FlightService) DecreaseFlightCapacity(id uuid.UUID, seats int) error {
+	var flight models.Flight
+	flight.ID = id
+	err := s.GetFlightByID(&flight)
+	if err != nil {
+		return err
+	}
+
+	if flight.RemainingSeat < seats {
+		return fmt.Errorf("not enough seats available")
+	}
+
+	flight.RemainingSeat -= seats
+
+	err = s.db.UpdateFlight(&flight)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *FlightService) IncreaseFlightCapacity(id uuid.UUID, seats int) error {
+	var flight models.Flight
+	flight.ID = id
+	err := s.GetFlightByID(&flight)
+	if err != nil {
+		return err
+	}
+
+	flight.RemainingSeat += seats
+
+	err = s.db.UpdateFlight(&flight)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
