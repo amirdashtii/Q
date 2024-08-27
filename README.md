@@ -2,18 +2,19 @@
 
 ## Overview
 
-This super app is designed using a microservices architecture. Each service is independent, allowing for modular development, deployment, and scaling. The initial setup includes an authentication service, and other services like ticket booking, payment, and more will be added over time.
+This super app is designed using a microservices architecture. Each service is independent, allowing for modular development, deployment, and scaling. The initial setup includes an authentication service and a flight provider service, with other services like ticket booking and payment, and more planned to be added over time.
 
 ## Architecture
 
 - **Microservices**: Independent services with dedicated responsibilities.
-- **Communication**: Services communicate via HTTP APIs 
-- **Data Management**: Each service manages its own database to ensure decoupling and independent scaling.
+- **Communication**: Services communicate via HTTP APIs.
+- **Data Management**: Each service manages its database to ensure decoupling and independent scaling.
 - **Caching and Session Management**: Redis is used for caching and session management.
 
 ## Services
 
 1. **Authentication Service**: Manages user registration, login, and authorization.
+2. **Flight Provider Service**: Generates random flight data for the next 30 days, manages flight capacity, and allows retrieving flight details by ID.
 
 ## Prerequisites
 
@@ -23,29 +24,33 @@ This super app is designed using a microservices architecture. Each service is i
 - Redis
 - [Optional] Kubernetes (for deployment and scaling)
 
-
 ## Setting Up the Project
 
 Each service in this project is independent and has its own configuration and environment variables. Below is the general process for setting up any service.
 
 ### Clone the Repository:
-   ```bash
-   git clone https://github.com/amirdashtii/Q.git
-   cd Q
-   ```
+```
+git clone https://github.com/amirdashtii/Q.git
+cd Q
+```
 
 ### Navigate to the Specific Service Directory:
-Each service has its own folder, which contains its configuration files including `.env` and `docker-compose.yml`.
+Each service has a folder, containing its configuration files including `.env` and `docker-compose.yml`.
 
 For example, for the authentication service:
-```bash
+```
 cd auth-service
 ```
 
-### Environment Configuration:
-Each service includes a `.env-sample` file that contains the required environment variables. You need to rename this file to `.env` and fill in the required variables.
+For the flight provider service:
+```
+cd flight-provider-service
+```
 
-```bash
+### Environment Configuration:
+Each service includes a `.env-sample` file that contains the required environment variables. You must rename this file to `.env` and fill in the required variables.
+
+```
 mv .env-sample .env
 ```
 
@@ -60,6 +65,10 @@ docker-compose up --build
 
 ## Inter-Service Communication
 - **API Calls**: Services expose RESTful APIs that other services can consume.
+
+## Deployment
+Services can be deployed independently using Docker or Kubernetes. Each service has its own Dockerfile and deployment configuration.
+
 
 ## Deployment
 Services can be deployed independently using Docker or Kubernetes. Each service has its own Dockerfile and deployment configuration.
