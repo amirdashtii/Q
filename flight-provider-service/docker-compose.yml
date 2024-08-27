@@ -1,19 +1,19 @@
 services:
-  # flight-provider-service:
-  #   build: .
-  #   ports:
-  #     - "${PORT}:${PORT}"
-  #   environment:
-  #     - ENV=development
-  #     - POSTGRES_HOST=postgres
-  #     - POSTGRES_PORT=${POSTGRES_PORT}
-  #     - POSTGRES_DB_NAME=${POSTGRES_DB_NAME}
-  #     - POSTGRES_USER=${POSTGRES_USER}
-  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #   depends_on:
-  #     - postgres
-  #   networks:
-  #     - flight-network
+  flight-provider-service:
+    build: .
+    ports:
+      - "${PORT}:${PORT}"
+    environment:
+      - ENV=development
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=${POSTGRES_PORT}
+      - POSTGRES_DB_NAME=${POSTGRES_DB_NAME}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres
+    networks:
+      - flight-network
 
   postgres:
     image: postgres:14-alpine
