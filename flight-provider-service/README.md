@@ -17,7 +17,21 @@ The service exposes several API endpoints that you can interact with:
    - **Method**: `GET`
    - **Description**: Retrieves the details of a specific flight based on its ID.
 
-2. **Reserve Seats on a Flight**
+2. **Search Flights**
+   - **Endpoint**: `/flights`
+   - **Method**: `GET`
+   - **Description**: Retrieves a list of flights based on search criteria such as source, destination, and departure date.
+   - **Query Parameters**:
+     - `source`: The source location (e.g., `Tehran`).
+     - `destination`: The destination location (e.g., `Mashhad`).
+     - `date`: The departure date in `YYYY-MM-DD` format (e.g., `2024-09-01`).
+
+     **Example Request**:
+     ```plaintext
+     GET /flights?source=Tehran&destination=Mashhad&date=2024-09-01
+     ```
+     
+3. **Reserve Seats on a Flight**
    - **Endpoint**: `/flights/:id/reserve`
    - **Method**: `PATCH`
    - **Request Body**:
@@ -28,7 +42,7 @@ The service exposes several API endpoints that you can interact with:
      ```
    - **Description**: Books a specified number of seats and decreases the available capacity.
 
-3. **Cancel Seats on a Flight**
+4. **Cancel Seats on a Flight**
    - **Endpoint**: `/flights/:id/cancel`
    - **Method**: `PATCH`
    - **Request Body**:
