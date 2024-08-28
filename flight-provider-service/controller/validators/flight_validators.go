@@ -25,7 +25,7 @@ func validateDepartingDate(departingStr string) error {
 	return nil
 }
 
-func ValidateFlightParam(fReq *models.FlightReq) error {
+func ValidateFlightParam(fReq *models.FlightSearchRequest) error {
 	if fReq.Source == "" {
 		return errors.New("source is required")
 	}

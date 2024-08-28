@@ -2,9 +2,9 @@ package models
 
 import "time"
 
-type FlightReq struct {
-	Source             string `gorm:"size:255" json:"source"`
-	Destination        string `gorm:"size:255" json:"destination"`
+type FlightSearchRequest struct {
+	Source             string `json:"source"`
+	Destination        string `json:"destination"`
 	DepartureDate      string `json:"departure_date"`
 	DepartureDateStart time.Time
 	DepartureDateEnd   time.Time
