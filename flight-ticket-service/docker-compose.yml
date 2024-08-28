@@ -1,7 +1,23 @@
 services:
+  # flight-provider-service:
+  #   build: .
+  #   ports:
+  #     - "${PORT}:${PORT}"
+  #   environment:
+  #     - ENV=development
+  #     - POSTGRES_HOST=postgres
+  #     - POSTGRES_PORT=${POSTGRES_PORT}
+  #     - POSTGRES_DB_NAME=${POSTGRES_DB_NAME}
+  #     - POSTGRES_USER=${POSTGRES_USER}
+  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+  #   depends_on:
+  #     - postgres
+  #   networks:
+  #     - flight-ticket-network
+
   postgres:
     image: postgres:14-alpine
-    container_name: postgres_flight_ticket_service
+    container_name: flight_ticket_postgres
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
@@ -10,3 +26,7 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_DB=${POSTGRES_DB_NAME}
+    # networks:
+    #   - flight-network
+
+# networks: flight
