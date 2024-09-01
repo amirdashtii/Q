@@ -22,5 +22,7 @@ func main() {
 		return c.String(200, "Flight Ticket Service is running")
 	})
 	controller.AddFlightServiceRoutes(e)
+	controller.AddPassengerServiceRoutes(e)
+	controller.AddTicketServiceRoutes(e)
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }

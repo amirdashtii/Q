@@ -2,7 +2,6 @@ package repositories
 
 import (
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/amirdashtii/Q/flight-ticket-service/models"
@@ -28,9 +27,8 @@ func GormInit() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	err = database.AutoMigrate(&models.Flight{})
-	if err != nil {
-		log.Fatalf(err.Error())
+	if err = database.AutoMigrate(&models.TicketReservation{}, &models.Passenger{}); err != nil {
+		return nil, err
 	}
 
 	return database, nil

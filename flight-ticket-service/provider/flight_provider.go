@@ -2,7 +2,6 @@ package provider
 
 import (
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -53,7 +52,7 @@ func (pc *FlightProviderClient) RequestFlights(flightReq *models.FlightSearchReq
 	query := u.Query()
 	query.Set("source", flightReq.Source)
 	query.Set("destination", flightReq.Destination)
-	query.Set("date", flightReq.DepartureDate)
+	query.Set("departure_date", flightReq.DepartureDate)
 	u.RawQuery = query.Encode()
 
 	req, err := http.NewRequest(http.MethodGet, u.String(), nil)
@@ -79,7 +78,6 @@ func (pc *FlightProviderClient) RequestFlights(flightReq *models.FlightSearchReq
 }
 
 func (pc *FlightProviderClient) RequestFlight(id *string, flight *models.Flight) error {
-	fmt.Println(flightProviderHost + flightProviderEndpoint + "/" + *id)
 	req, err := http.NewRequest(http.MethodGet, flightProviderHost+flightProviderEndpoint+"/"+*id, nil)
 	if err != nil {
 		return err

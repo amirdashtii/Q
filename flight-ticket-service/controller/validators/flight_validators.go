@@ -7,21 +7,17 @@ import (
 	"time"
 
 	"github.com/amirdashtii/Q/flight-ticket-service/models"
-	"github.com/google/uuid"
 )
 
 // Validate the departure date
 func validateDepartingDate(departingStr string) error {
-	if departingStr == "" {
-		return errors.New("departing date is required")
-	}
 
-	departing, err := time.Parse("2006-01-02", departingStr)
-	if err != nil {
-		return errors.New("invalid input date format")
+	if err := ValidateDate(departingStr); err != nil {
+		return err
 	}
 
 	now := time.Now().UTC()
+	departing, _ := time.Parse("2006-01-02", departingStr)
 	if departing.Before(now) {
 		return errors.New("past date is not allowed")
 	}
@@ -112,7 +108,6 @@ func validateFilter(filter string) error {
 	return nil
 }
 
-
 func ValidateFlightParam(fReq *models.FlightSearchRequest) error {
 	if fReq.Source == "" {
 		return errors.New("source is required")
@@ -146,13 +141,5 @@ func ValidateFlightParam(fReq *models.FlightSearchRequest) error {
 		return err
 	}
 
-	return nil
-}
-
-func ValidateID(id string) error {
-	_, err := uuid.Parse(id)
-	if err != nil {
-		return errors.New("invalid id format")
-	}
 	return nil
 }

@@ -23,12 +23,42 @@ func NewFlightHandler() *FlightHandler {
 func AddFlightServiceRoutes(e *echo.Echo) {
 	h := NewFlightHandler()
 
-	e.GET("/flights", h.GetFlightsHandler)
-	e.GET("/flights/:id", h.GetFlightByIDHandler)
+	// Flight Routes
+	flightGroup := e.Group("/flights")
+	flightGroup.GET("", h.GetFlightsHandler)        // لیست پروازها
+	flightGroup.GET("/:id", h.GetFlightByIDHandler) // دریافت جزئیات پرواز
+	// flightGroup.GET("/:id/status", h.GetFlightStatusHandler)   // پیگیری وضعیت پرواز
+
+	// // Ticket Routes
+	// ticketGroup := e.Group("/tickets")
+	// ticketGroup.POST("/reserve", h.ReserveTicketHandler)        // رزرو بلیت
+	// ticketGroup.POST("/cancel", h.CancelTicketHandler)          // لغو رزرو بلیت
+	// ticketGroup.POST("/pay", h.PayTicketHandler)                // پرداخت بلیت
+	// ticketGroup.PATCH("/update", h.UpdateTicketHandler)         // تغییر یا به‌روزرسانی اطلاعات بلیت
+
+	// // User Reservation Routes
+	// userReservationGroup := e.Group("/user")
+	// userReservationGroup.Use(middleware.JwtMiddleware)
+	// userReservationGroup.GET("/reservations", h.ListUserReservationsHandler) // مشاهده رزروهای یک کاربر
+
+	// // Reservation Routes
+	// reservationGroup := e.Group("/reservations")
+	// reservationGroup.GET("/:id", h.GetReservationByIdHandler)   // دریافت جزئیات یک رزرو
+
+	// // Payment Status Routes
+	// paymentGroup := e.Group("/payment-status")
+	// paymentGroup.GET("", h.GetPaymentStatusHandler)             // بررسی وضعیت پرداخت
+
+	// // Airline Routes
+	// airlineGroup := e.Group("/airlines")
+	// airlineGroup.GET("", h.ListAirlinesHandler)                 // لیست شرکت‌های هواپیمایی
+
 }
 
 func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
+
 	var flightReq models.FlightSearchRequest
+	var flights []models.Flight
 
 	flightReq.Source = c.QueryParam("source")
 	flightReq.Destination = c.QueryParam("destination")
@@ -38,15 +68,11 @@ func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
 	flightReq.SortOrder = c.QueryParam("order")
 	flightReq.Filter = c.QueryParam("filter_by")
 
-	err := validators.ValidateFlightParam(&flightReq)
-	if err != nil {
+	if err := validators.ValidateFlightParam(&flightReq); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
 
-	var flights []models.Flight
-	err = h.svc.GetFlights(&flightReq, &flights)
-
-	if err != nil {
+	if err := h.svc.GetFlights(&flightReq, &flights); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"error": err.Error(),
 		})
@@ -58,18 +84,17 @@ func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
 }
 
 func (h *FlightHandler) GetFlightByIDHandler(c echo.Context) error {
-	id := c.Param("id")
+	
+	var flight models.Flight
 
-	err := validators.ValidateID(id)
-	if err != nil {
+	userIDStr := c.Param("id")
+
+	if err := validators.IDValidation(map[string]string{"id": userIDStr}); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
-
-	var flight models.Flight
-	err = h.svc.GetFlightByID(&id, &flight)
-
-	if err != nil {
-		return c.JSON(http.StatusNotFound, echo.Map{"error": "Flight not found"})
+	
+	if err := h.svc.GetFlightByID(&userIDStr, &flight); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
 	}
 
 	return c.JSON(http.StatusOK, echo.Map{
