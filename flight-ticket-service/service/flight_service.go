@@ -13,12 +13,12 @@ import (
 
 type FlightService struct {
 	db ports.FlightRepositoryContracts
-	pr ports.FlightProviderContract
+	pr ports.ProviderContract
 }
 
 func NewFlightService() *FlightService {
 	db := repositories.NewPostgres()
-	pr := provider.NewFlightProviderClient()
+	pr := provider.NewProviderClient()
 
 	return &FlightService{
 		db: db,
@@ -26,7 +26,7 @@ func NewFlightService() *FlightService {
 	}
 }
 
-func (s *FlightService) GetFlights(flightReq *models.FlightSearchRequest, flights *[]models.Flight) error {
+func (s *FlightService) GetFlights(flightReq *models.FlightSearchRequest, flights *[]models.FlightProvider) error {
 
 	err := s.pr.RequestFlights(flightReq, flights)
 	if err != nil {
@@ -42,8 +42,8 @@ func (s *FlightService) GetFlights(flightReq *models.FlightSearchRequest, flight
 	return nil
 }
 
-func (s *FlightService) applyFilters(flights []models.Flight, filter string) []models.Flight {
-	var filteredFlights []models.Flight
+func (s *FlightService) applyFilters(flights []models.FlightProvider, filter string) []models.FlightProvider {
+	var filteredFlights []models.FlightProvider
 
 	if filter == "" {
 		return flights
@@ -58,7 +58,7 @@ func (s *FlightService) applyFilters(flights []models.Flight, filter string) []m
 	return filteredFlights
 }
 
-func (s *FlightService) applyFilter(flight models.Flight, filter string) bool {
+func (s *FlightService) applyFilter(flight models.FlightProvider, filter string) bool {
 	parts := strings.Split(filter, "=")
 	if len(parts) != 2 {
 		return false
@@ -115,7 +115,7 @@ func (s *FlightService) applyFilter(flight models.Flight, filter string) bool {
 	return false
 }
 
-func (s *FlightService) applySorting(flights []models.Flight, sortBy, sortOrder string) []models.Flight {
+func (s *FlightService) applySorting(flights []models.FlightProvider, sortBy, sortOrder string) []models.FlightProvider {
 	if sortBy == "" {
 		return flights
 	}
@@ -141,6 +141,6 @@ func (s *FlightService) applySorting(flights []models.Flight, sortBy, sortOrder 
 	return flights
 }
 
-func (s *FlightService) GetFlightByID(id *string, flight *models.Flight) error {
+func (s *FlightService) GetFlightByID(id *string, flight *models.FlightProvider) error {
 	return s.pr.RequestFlight(id, flight)
 }

@@ -1,31 +1,47 @@
 package models
 
-import "time"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 type FlightSearchRequest struct {
-    Source        string `json:"source"`
-    Destination   string `json:"destination"`
-    DepartureDate string `json:"departure_date"`
-    SortBy        string `json:"sort_by,omitempty"`
-    SortOrder     string `json:"order,omitempty"`
-    Filter        string `json:"filter_by,omitempty"`
+	Source        string `json:"source"`
+	Destination   string `json:"destination"`
+	DepartureDate string `json:"departure_date"`
+	SortBy        string `json:"sort_by,omitempty"`
+	SortOrder     string `json:"order,omitempty"`
+	Filter        string `json:"filter_by,omitempty"`
 }
 
-
-
 type Flight struct {
-	DBModel
-	FlightNumber   string      `gorm:"size:255" json:"flight_number"`
-	Source         string      `gorm:"size:255" json:"source"`
-	Destination    string      `gorm:"size:255" json:"destination"`
+	FlightID       uuid.UUID   `json:"flight_id" gorm:"type:uuid"`
+	FlightNumber   string      `json:"flight_number" gorm:"size:255"`
+	Source         string      `json:"source" gorm:"size:255"`
+	Destination    string      `json:"destination" gorm:"size:255"`
 	DepartureDate  time.Time   `json:"departure_date"`
 	FlightDuration int         `json:"flight_duration"`
 	ArrivalDate    time.Time   `json:"arrival_date"`
-	AirlineName    string      `gorm:"size:255" json:"airline_name"`
-	AircraftName   string      `gorm:"size:255" json:"aircraft_name"`
+	AirlineName    string      `json:"airline_name" gorm:"size:255"`
+	AircraftName   string      `json:"aircraft_name" gorm:"size:255"`
+	FareClass      string      `json:"fare_class" gorm:"size:255"`
+	FlightClass    FlightClass `json:"flight_class" gorm:"size:255"`
+}
+
+type FlightProvider struct {
+	DBModel
+	FlightNumber   string      `json:"flight_number" gorm:"size:255"`
+	Source         string      `json:"source" gorm:"size:255"`
+	Destination    string      `json:"destination" gorm:"size:255"`
+	DepartureDate  time.Time   `json:"departure_date"`
+	FlightDuration int         `json:"flight_duration"`
+	ArrivalDate    time.Time   `json:"arrival_date"`
+	AirlineName    string      `json:"airline_name" gorm:"size:255"`
+	AircraftName   string      `json:"aircraft_name" gorm:"size:255"`
 	FareClass      FareClass   `gorm:"embedded"`
 	Tax            int64       `json:"tax"`
-	FlightClass    FlightClass `gorm:"size:255" json:"flight_class"`
+	FlightClass    FlightClass `json:"flight_class" gorm:"size:255"`
 	RemainingSeat  int         `json:"remaining_seat"`
 }
 

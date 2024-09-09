@@ -6,7 +6,7 @@ import (
 	"github.com/amirdashtii/Q/flight-ticket-service/models"
 )
 
-func ReservationValidation(reservationRequest *models.TicketReservationRequest, userIDStr string) error {
+func ReservationValidation(reservationRequest *models.ReservationRequest, userIDStr string) error {
 
 	if reservationRequest.FlightID == "" {
 		return errors.New("flight ID is required")

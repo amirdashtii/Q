@@ -9,13 +9,13 @@ import (
 type Passenger struct {
 	DBModel
 	UserID         uuid.UUID  `json:"user_id" gorm:"not null"`
-	FirstName      string     `json:"first_name" gorm:"size:255 not null"`
-	LastName       string     `json:"last_name" gorm:"size:255 not null"`
+	FirstName      string     `json:"first_name" gorm:"size:255;not null"`
+	LastName       string     `json:"last_name" gorm:"size:255;not null"`
 	DateOfBirth    *time.Time `json:"date_of_birth" gorm:"not null"`
-	Nationality    string     `json:"nationality"`
-	NationalCode   string     `json:"national_code"`
+	Nationality    string     `json:"nationality" gorm:"size:255"`
+	NationalCode   string     `json:"national_code" gorm:"unique"`
 	PassportNumber string     `json:"passport_number"`
-	Gender         string     `json:"gender"`
+	Gender         string     `json:"gender" gorm:"size:255"`
 }
 
 type PassengerReq struct {

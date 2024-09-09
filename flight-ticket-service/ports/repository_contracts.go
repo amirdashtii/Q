@@ -9,8 +9,9 @@ type FlightRepositoryContracts interface {
 }
 
 type TicketRepositoryContracts interface {
-	Reserve(reservation *models.TicketReservation) error
-	FindPassengersByIDs(userID *uuid.UUID, passengerIDs *[]uuid.UUID, passengers *[]models.Passenger) error
+	Reserve(Reservation *models.Reservation) error
+	GetReservationByID(reservation *models.Reservation) error
+	FindPassengersByIDs(userID *uuid.UUID, passengerIDs *[]uuid.UUID, passenger *[]models.Passenger) error
 }
 
 type PassengerRepositoryContracts interface {
