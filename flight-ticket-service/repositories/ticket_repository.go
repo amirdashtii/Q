@@ -14,12 +14,17 @@ func (p *Postgres) Reserve(reservation *models.Tickets) error {
 }
 
 func (p *Postgres) GetReservationByID(reservation *models.Tickets) error {
-	result := p.db.Preload("TicketItems.Passenger").Find(reservation)
+	result := p.db.Preload("TicketItems.Passenger").Where("id = ? AND user_id = ?", reservation.ID, reservation.UserID).First(reservation)
 	return result.Error
 }
 
 func (p *Postgres) GetTicketsByRefNum(resNum string) error {
 	var tickets models.Tickets
 	result := p.db.Where("reference_number = ?", resNum).First(tickets)
+	return result.Error
+}
+
+func (p *Postgres) UpdateReservation(reservation *models.Tickets) error {
+	result := p.db.Updates(reservation)
 	return result.Error
 }

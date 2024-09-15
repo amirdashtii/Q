@@ -28,11 +28,9 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 	// Ticket Routes
 	ticketGroup := e.Group("/tickets")
 	ticketGroup.Use(middleware.JwtMiddleware)
-	ticketGroup.POST("/reserve", h.ReserveTicketHandler)         // رزرو بلیت
-	ticketGroup.GET("/reserve/:id", h.GetReservationByIDHandler) // رزرو بلیت
-	// ticketGroup.POST("/cancel", h.CancelTicketHandler)          // لغو رزرو بلیت
-	// ticketGroup.PATCH("/update", h.UpdateTicketHandler)         // تغییر یا به روزرسانی اطلاعات بلیت
-
+	ticketGroup.POST("/reserve", h.ReserveTicketHandler)
+	ticketGroup.GET("/reserve/:id", h.GetReservationByIDHandler)
+	ticketGroup.POST("/cancel/:id", h.CancelTicketHandler)
 }
 
 func (h *TicketHandler) ReserveTicketHandler(c echo.Context) error {
@@ -109,3 +107,36 @@ func (h *TicketHandler) GetReservationByIDHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})
 }
 
+func (h *TicketHandler) CancelTicketHandler(c echo.Context) error {
+	var tickets models.Tickets
+
+	userIDStr := c.Get("id").(string)
+	ticketsIDStr := c.Param("id")
+
+	if err := validators.IDValidation(map[string]string{"user id": userIDStr, "tickets id": ticketsIDStr}); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	tickets.UserID = userID
+
+	ticketID, err := uuid.Parse(ticketsIDStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": err.Error(),
+		})
+	}
+	tickets.ID = ticketID
+
+	if err := h.svc.CancelTicket(&tickets); err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"message": "Ticket canceled successfully"})
+}

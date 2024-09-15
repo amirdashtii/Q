@@ -22,9 +22,9 @@ type FlightsResponse struct {
 	Flights []models.ProviderFlight `json:"flights"`
 }
 
-// type FlightResponse struct {
-// 	Flight models.FlightPr `json:"flight"`
-// }
+type FlightResponse struct {
+	Flight models.ProviderFlight `json:"flight"`
+}
 
 type ProviderClient struct {
 	client *http.Client
@@ -91,13 +91,13 @@ func (pc *ProviderClient) RequestFlight(id *string, flight *models.ProviderFligh
 		return err
 	}
 	defer resp.Body.Close()
-	// var response FlightResponse
+	var response FlightResponse
 	err = json.NewDecoder(resp.Body).Decode(flight)
 	if err != nil {
 		return err
 	}
 
-	// *flight = response.Flight
+	*flight = response.Flight
 
 	return nil
 }
@@ -131,31 +131,31 @@ func (pc *ProviderClient) ReserveTicketWithProvider(seats int, flightID string) 
 	return nil
 }
 
-// func (pc *ProviderClient) CancelTicketWithProvider(reservation *models.Tickets) error {
+func (pc *ProviderClient) CancelTicketWithProvider(seets int, flightID string) error {
 
-// 	data := map[string]int{
-// 		"seats": len(reservation.Passengers),
-// 	}
+	data := map[string]int{
+		"seats": seets,
+	}
 
-// 	jsonData, err := json.Marshal(data)
-// 	if err != nil {
-// 		return err
-// 	}
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
 
-// 	req, err := http.NewRequest(http.MethodPatch, flightProviderHost+flightProviderEndpoint+"/"+reservation.FlightID.String()+"/cancel", bytes.NewBuffer(jsonData))
-// 	if err != nil {
-// 		return err
-// 	}
+	req, err := http.NewRequest(http.MethodPatch, flightProviderHost+flightProviderEndpoint+"/"+flightID+"/cancel", bytes.NewBuffer(jsonData))
+	if err != nil {
+		return err
+	}
 
-// 	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Content-Type", "application/json")
 
-// 	resp, err := pc.client.Do(req)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer resp.Body.Close()
-// 	if resp.StatusCode != http.StatusOK {
-// 		return errors.New(resp.Status)
-// 	}
-// 	return nil
-// }
+	resp, err := pc.client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return errors.New(resp.Status)
+	}
+	return nil
+}

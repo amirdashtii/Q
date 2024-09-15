@@ -18,4 +18,5 @@ type RepositoryContracts interface {
 	Reserve(ticket *models.Tickets) error
 	GetReservationByID(ticket *models.Tickets) error
 	GetTicketsByRefNum(resNum string) error
+	UpdateReservation(ticket *models.Tickets) error
 }

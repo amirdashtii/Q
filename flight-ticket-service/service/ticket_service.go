@@ -56,6 +56,31 @@ func (s *TicketService) GetReservationByID(tickets *models.Tickets) error {
 	return s.db.GetReservationByID(tickets)
 }
 
+func (s *TicketService) CancelTicket(tickets *models.Tickets) error {
+	if err := s.db.GetReservationByID(tickets); err != nil {
+		return errors.New("ticket not found")
+	}
+
+	if tickets.Status == "cancelled" {
+		return errors.New("ticket already cancelled")
+	}
+	
+	if err := s.pr.CancelTicketWithProvider(len(tickets.TicketItems), tickets.FlightID.String()); err != nil {
+		return err
+	}
+
+	tickets.Status = "cancelled"
+	return s.db.UpdateReservation(tickets)
+}
+
+func (s *TicketService) UpdateReservation(tickets *models.Tickets) error {
+	updateItem := make(map[string]interface{})
+
+	updateItem["status"] = tickets.Status
+
+	return s.db.UpdateReservation(tickets)
+}
+
 func addFlightAndPassengersToTicket(tickets *models.Tickets, fp models.ProviderFlight, passengers []models.Passenger) error {
 	for _, passenger := range passengers {
 		var t models.TicketItem
