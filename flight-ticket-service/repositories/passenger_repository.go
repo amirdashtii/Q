@@ -40,3 +40,7 @@ func (p *Postgres) DeletePassenger(passenger *models.Passenger) error {
 	return result.Error
 }
 
+func (p *Postgres) FindPassengersByIDs(userID *uuid.UUID, passengerIDs *[]uuid.UUID, passengers *[]models.Passenger) error {
+	result := p.db.Where("user_id = ?", userID).Find(passengers, passengerIDs)
+	return result.Error
+}

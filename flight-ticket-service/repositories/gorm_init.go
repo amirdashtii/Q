@@ -27,7 +27,7 @@ func GormInit() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	if err = database.AutoMigrate(&models.Reservation{}, &models.TicketItem{}, &models.Passenger{}); err != nil {
+	if err = database.AutoMigrate(&models.Tickets{}, &models.TicketItem{}, &models.Passenger{}); err != nil {
 		return nil, err
 	}
 

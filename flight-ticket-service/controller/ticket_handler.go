@@ -31,7 +31,6 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 	ticketGroup.POST("/reserve", h.ReserveTicketHandler)         // رزرو بلیت
 	ticketGroup.GET("/reserve/:id", h.GetReservationByIDHandler) // رزرو بلیت
 	// ticketGroup.POST("/cancel", h.CancelTicketHandler)          // لغو رزرو بلیت
-	// ticketGroup.POST("/pay", h.PayTicketHandler)                // پرداخت بلیت
 	// ticketGroup.PATCH("/update", h.UpdateTicketHandler)         // تغییر یا به روزرسانی اطلاعات بلیت
 
 }
@@ -39,7 +38,7 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 func (h *TicketHandler) ReserveTicketHandler(c echo.Context) error {
 
 	userIDStr := c.Get("id").(string)
-	var reservation models.Reservation
+	var tickets models.Tickets
 	var reservationRequest models.ReservationRequest
 	var passengerIDs []uuid.UUID
 
@@ -57,7 +56,7 @@ func (h *TicketHandler) ReserveTicketHandler(c echo.Context) error {
 			"error": err.Error(),
 		})
 	}
-	reservation.UserID = userID
+	tickets.UserID = userID
 
 	for _, passengerIDStr := range reservationRequest.PassengerIDs {
 		passengerID, err := uuid.Parse(passengerIDStr)
@@ -69,20 +68,20 @@ func (h *TicketHandler) ReserveTicketHandler(c echo.Context) error {
 		passengerIDs = append(passengerIDs, passengerID)
 	}
 
-	if err := h.svc.CreateReservation(reservationRequest.FlightID, passengerIDs, &reservation); err != nil {
+	if err := h.svc.CreateReservation(reservationRequest.FlightID, passengerIDs, &tickets); err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, echo.Map{"reservation": reservation})
+	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})
 }
 
 func (h *TicketHandler) GetReservationByIDHandler(c echo.Context) error {
 
-	var reservation models.Reservation
+	var tickets models.Tickets
 
 	userIDStr := c.Get("id").(string)
-	reservationIDStr := c.Param("id")
+	ticketsIDStr := c.Param("id")
 
-	if err := validators.IDValidation(map[string]string{"user id": userIDStr, "reservation id": reservationIDStr}); err != nil {
+	if err := validators.IDValidation(map[string]string{"user id": userIDStr, "tickets id": ticketsIDStr}); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"error": err.Error(),
 		})
@@ -94,18 +93,19 @@ func (h *TicketHandler) GetReservationByIDHandler(c echo.Context) error {
 			"error": err.Error(),
 		})
 	}
-	reservation.UserID = userID
+	tickets.UserID = userID
 
-	ticketID, err := uuid.Parse(reservationIDStr)
+	ticketID, err := uuid.Parse(ticketsIDStr)
 	if err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{
 			"error": err.Error(),
 		})
 	}
-	reservation.ID = ticketID
+	tickets.ID = ticketID
 
-	if err := h.svc.GetReservationByID(&reservation); err != nil {
+	if err := h.svc.GetReservationByID(&tickets); err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
-	return c.JSON(http.StatusOK, echo.Map{"reservation": reservation})
+	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})
 }
+

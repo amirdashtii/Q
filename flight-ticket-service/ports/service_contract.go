@@ -6,13 +6,17 @@ import (
 )
 
 type FlightServiceContract interface {
-	GetFlights(flightReq *models.FlightSearchRequest, flights *[]models.FlightProvider) error
-	GetFlightByID(id *string, flight *models.FlightProvider) error
+	GetFlights(flightReq *models.FlightSearchRequest, flights *[]models.ProviderFlight) error
+	GetFlightByID(id *string, flight *models.ProviderFlight) error
 }
 
 type TicketServiceContract interface {
-	CreateReservation(flightID string, passengerIDs []uuid.UUID, Reservation *models.Reservation) error
-	GetReservationByID(Reservation *models.Reservation) error
+	CreateReservation(flightID string, passengerIDs []uuid.UUID, ticket *models.Tickets) error
+	GetReservationByID(ticket *models.Tickets) error
+}
+type PaymentServiceContract interface {
+	PayTicket(ticket *models.Tickets,paymentGateway string) (string, error)
+	VerifyTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) (models.Transaction, error)
 }
 
 type PassengerServiceContract interface {

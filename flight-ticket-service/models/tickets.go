@@ -4,12 +4,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type Reservation struct {
+type Tickets struct {
 	DBModel
-	UserID      uuid.UUID    `json:"user_id" gorm:"not null"`
-	TicketItems []TicketItem `json:"ticket_items" gorm:"foreignKey:ReservationID;constraint:OnDelete:CASCADE;"`
-	TotalPrice  int64        `json:"total_price"`
-	Status      string       `json:"status" gorm:"not null"`
+	UserID          uuid.UUID    `json:"user_id" gorm:"not null"`
+	FlightID        uuid.UUID    `json:"flight_id"`
+	TicketItems     []TicketItem `json:"ticket_items" gorm:"foreignKey:ReservationID;constraint:OnDelete:CASCADE;"`
+	TotalPrice      int64        `json:"total_price"`
+	Status          string       `json:"status" gorm:"not null"`
+	ReferenceNumber string       `json:"reference_number"`
 }
 
 type TicketItem struct {
@@ -25,3 +27,4 @@ type ReservationRequest struct {
 	PassengerIDs []string `json:"passenger_ids"`
 	FlightID     string   `json:"flight_id"`
 }
+

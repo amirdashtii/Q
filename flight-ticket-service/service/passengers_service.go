@@ -11,7 +11,7 @@ import (
 )
 
 type PassengerService struct {
-	db ports.PassengerRepositoryContracts
+	db ports.RepositoryContracts
 }
 
 func NewPassengerService() *PassengerService {
@@ -87,3 +87,7 @@ func (u *PassengerService) UpdatePassenger(passengerID, userID *uuid.UUID, passe
 func (u *PassengerService) DeletePassenger(passenger *models.Passenger) error {
 	return u.db.DeletePassenger(passenger)
 }
+
+// func (s *TicketService) FindPassengersByIDs(userID *uuid.UUID, passengerIDs *[]uuid.UUID, passengers *[]models.Passenger) error {
+// 	return s.db.FindPassengersByIDs(userID, passengerIDs, passengers)
+// }

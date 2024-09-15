@@ -58,7 +58,7 @@ func AddFlightServiceRoutes(e *echo.Echo) {
 func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
 
 	var flightReq models.FlightSearchRequest
-	var flights []models.FlightProvider
+	var flights []models.ProviderFlight
 
 	flightReq.Source = c.QueryParam("source")
 	flightReq.Destination = c.QueryParam("destination")
@@ -85,7 +85,7 @@ func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
 
 func (h *FlightHandler) GetFlightByIDHandler(c echo.Context) error {
 
-	var flight models.FlightProvider
+	var flight models.ProviderFlight
 
 	userIDStr := c.Param("id")
 

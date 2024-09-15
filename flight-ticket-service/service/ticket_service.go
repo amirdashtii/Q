@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/amirdashtii/Q/flight-ticket-service/models"
@@ -13,26 +12,29 @@ import (
 )
 
 type TicketService struct {
-	db ports.TicketRepositoryContracts
-	pr ports.ProviderContract
+	db   ports.RepositoryContracts
+	pr   ports.FlightProviderContract
+	pgpr ports.PaymentGatewayProviderContract
 }
 
 func NewTicketService() *TicketService {
 	db := repositories.NewPostgres()
 	pr := provider.NewProviderClient()
+	pgpr := provider.NewSamanGateway()
 
 	return &TicketService{
-		db: db,
-		pr: pr,
+		db:   db,
+		pr:   pr,
+		pgpr: pgpr,
 	}
 }
 
-func (s *TicketService) CreateReservation(flightID string, passengerIDs []uuid.UUID, reservation *models.Reservation) error {
+func (s *TicketService) CreateReservation(flightID string, passengerIDs []uuid.UUID, tickets *models.Tickets) error {
 
 	var passengers []models.Passenger
-	var flightProvider models.FlightProvider
+	var flightProvider models.ProviderFlight
 
-	if err := s.db.FindPassengersByIDs(&reservation.UserID, &passengerIDs, &passengers); err != nil {
+	if err := s.db.FindPassengersByIDs(&tickets.UserID, &passengerIDs, &passengers); err != nil {
 		return err
 	}
 
@@ -40,29 +42,25 @@ func (s *TicketService) CreateReservation(flightID string, passengerIDs []uuid.U
 		return err
 	}
 
-	err := addFlightAndPassengersToTicket(reservation, flightProvider, passengers)
+	err := addFlightAndPassengersToTicket(tickets, flightProvider, passengers)
 	if err != nil {
 		return nil
 	}
+	tickets.FlightID = flightProvider.ID
 
-	reservation.Status = "reserved"
+	tickets.Status = "reserved"
 
-	return s.db.Reserve(reservation)
+	return s.db.Reserve(tickets)
 }
-func (s *TicketService) GetReservationByID(reservation *models.Reservation) error {
-	return s.db.GetReservationByID(reservation)
-}
-
-func (s *TicketService) FindPassengersByIDs(userID *uuid.UUID, passengerIDs *[]uuid.UUID, passengers *[]models.Passenger) error {
-	return s.db.FindPassengersByIDs(userID, passengerIDs, passengers)
+func (s *TicketService) GetReservationByID(tickets *models.Tickets) error {
+	return s.db.GetReservationByID(tickets)
 }
 
-func addFlightAndPassengersToTicket(reservation *models.Reservation, fp models.FlightProvider, passengers []models.Passenger) error {
+func addFlightAndPassengersToTicket(tickets *models.Tickets, fp models.ProviderFlight, passengers []models.Passenger) error {
 	for _, passenger := range passengers {
 		var t models.TicketItem
 		t.PassengerID = passenger.ID
 
-		t.Flight.FlightID = fp.ID
 		t.Flight.FlightNumber = fp.FlightNumber
 		t.Flight.Source = fp.Source
 		t.Flight.Destination = fp.Destination
@@ -81,11 +79,8 @@ func addFlightAndPassengersToTicket(reservation *models.Reservation, fp models.F
 		t.Flight.FareClass = fareClass
 		t.Price = price
 
-		fmt.Println(t)
-
-		reservation.TicketItems = append(reservation.TicketItems, t)
-
-		reservation.TotalPrice += price
+		tickets.TicketItems = append(tickets.TicketItems, t)
+		tickets.TotalPrice += price
 	}
 
 	return nil

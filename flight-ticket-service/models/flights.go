@@ -2,8 +2,6 @@ package models
 
 import (
 	"time"
-
-	"github.com/google/uuid"
 )
 
 type FlightSearchRequest struct {
@@ -16,7 +14,6 @@ type FlightSearchRequest struct {
 }
 
 type Flight struct {
-	FlightID       uuid.UUID   `json:"flight_id" gorm:"type:uuid"`
 	FlightNumber   string      `json:"flight_number" gorm:"size:255"`
 	Source         string      `json:"source" gorm:"size:255"`
 	Destination    string      `json:"destination" gorm:"size:255"`
@@ -29,7 +26,7 @@ type Flight struct {
 	FlightClass    FlightClass `json:"flight_class" gorm:"size:255"`
 }
 
-type FlightProvider struct {
+type ProviderFlight struct {
 	DBModel
 	FlightNumber   string      `json:"flight_number" gorm:"size:255"`
 	Source         string      `json:"source" gorm:"size:255"`

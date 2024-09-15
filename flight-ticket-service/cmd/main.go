@@ -18,11 +18,10 @@ func main() {
 
 	e := echo.New()
 	e.Use(middleware.Logger())
-	e.GET("/a", func(c echo.Context) error {
-		return c.String(200, "Flight Ticket Service is running")
-	})
+	
 	controller.AddFlightServiceRoutes(e)
 	controller.AddPassengerServiceRoutes(e)
 	controller.AddTicketServiceRoutes(e)
+	controller.AddPaymentServiceRoutes(e)
 	e.Logger.Fatal(e.Start(":" + os.Getenv("PORT")))
 }
