@@ -135,7 +135,7 @@ func generateRandomFlightClass() models.FlightClass {
 	return classes[rand.IntN(len(classes))]
 }
 
-func (s *FlightService) GetFlights(flightReq *models.FlightReq, flights *[]models.Flight) error {
+func (s *FlightService) GetFlights(flightReq *models.FlightSearchRequest, flights *[]models.Flight) error {
 
 	dayStart, err := time.Parse(time.RFC3339, fmt.Sprintf("%sT00:00:00Z", flightReq.DepartureDate))
 	if err != nil {

@@ -35,11 +35,11 @@ func (h *FlightHandler) GetFlightsHandler(c echo.Context) error {
 	if err != nil {
 	}
 
-	var flightReq models.FlightReq
-	err = c.Bind(&flightReq)
-	if err != nil {
-		return c.JSON(http.StatusBadRequest, echo.Map{"error": err.Error()})
-	}
+	var flightReq models.FlightSearchRequest
+
+	flightReq.Source = c.QueryParam("source")
+	flightReq.Destination = c.QueryParam("destination")
+	flightReq.DepartureDate = c.QueryParam("departure_date")
 
 	err = validators.ValidateFlightParam(&flightReq)
 	if err != nil {
@@ -74,7 +74,9 @@ func (h *FlightHandler) GetFlightByIDHandler(c echo.Context) error {
 		return c.JSON(http.StatusNotFound, echo.Map{"error": "Flight not found"})
 	}
 
-	return c.JSON(http.StatusOK, flight)
+	return c.JSON(http.StatusOK, echo.Map{
+		"flight": flight,
+	})
 }
 
 func (h *FlightHandler) DecreaseFlightCapacityHandler(c echo.Context) error {
