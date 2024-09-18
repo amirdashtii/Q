@@ -29,8 +29,8 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 	ticketGroup := e.Group("/tickets")
 	ticketGroup.Use(middleware.JwtMiddleware)
 	ticketGroup.POST("/", h.ReserveTicketHandler)
-	// ticketGroup.GET("/", h.GetAllTicketsHandler)
 	ticketGroup.GET("/:id", h.GetTicketsByIDHandler)
+	ticketGroup.GET("/", h.GetAllTicketsHandler)
 	ticketGroup.POST("/cancel/:id", h.CancelTicketHandler)
 }
 
@@ -106,6 +106,31 @@ func (h *TicketHandler) GetTicketsByIDHandler(c echo.Context) error {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})
+}
+
+func (h *TicketHandler) GetAllTicketsHandler(c echo.Context) error {
+
+	var allTickets []models.Tickets
+
+	userIDStr := c.Get("id").(string)
+
+	if err := validators.IDValidation(map[string]string{"user id": userIDStr}); err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	userID, err := uuid.Parse(userIDStr)
+	if err != nil {
+		return c.JSON(http.StatusBadRequest, echo.Map{
+			"error": err.Error(),
+		})
+	}
+
+	if err := h.svc.GetAllTickets(&userID, &allTickets); err != nil {
+		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
+	}
+	return c.JSON(http.StatusOK, echo.Map{"all tickets": allTickets})
 }
 
 func (h *TicketHandler) CancelTicketHandler(c echo.Context) error {

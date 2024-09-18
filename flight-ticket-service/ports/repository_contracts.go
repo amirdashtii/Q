@@ -16,7 +16,8 @@ type RepositoryContracts interface {
 
 	// ticket
 	Reserve(ticket *models.Tickets) error
-	GetReservationByID(ticket *models.Tickets) error
+	GetTicketsByID(ticket *models.Tickets) error
+	GetAllTickets(userID *uuid.UUID, ticket *[]models.Tickets) error
 	GetTicketsByRefNum(resNum string) error
 	UpdateReservation(id uuid.UUID, updateItem map[string]interface{}) error
 

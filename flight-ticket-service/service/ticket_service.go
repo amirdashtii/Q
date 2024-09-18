@@ -52,12 +52,17 @@ func (s *TicketService) CreateReservation(flightID string, passengerIDs []uuid.U
 
 	return s.db.Reserve(tickets)
 }
+
 func (s *TicketService) GetTicketsByID(tickets *models.Tickets) error {
-	return s.db.GetReservationByID(tickets)
+	return s.db.GetTicketsByID(tickets)
+}
+
+func (s *TicketService) GetAllTickets(UserID *uuid.UUID, tickets *[]models.Tickets) error {
+	return s.db.GetAllTickets(UserID, tickets)
 }
 
 func (s *TicketService) CancelTicket(tickets *models.Tickets) error {
-	if err := s.db.GetReservationByID(tickets); err != nil {
+	if err := s.db.GetTicketsByID(tickets); err != nil {
 		return errors.New("ticket not found")
 	}
 

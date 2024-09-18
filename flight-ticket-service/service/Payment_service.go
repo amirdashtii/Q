@@ -36,7 +36,7 @@ func NewPaymentService() *PaymentService {
 func (s *PaymentService) PayTicketBySaman(tickets *models.Tickets) (string, error) {
 	var pFlight models.ProviderFlight
 
-	if err := s.db.GetReservationByID(tickets); err != nil {
+	if err := s.db.GetTicketsByID(tickets); err != nil {
 		return "", err
 	}
 	flightID := tickets.FlightID.String()

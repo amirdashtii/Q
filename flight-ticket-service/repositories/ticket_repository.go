@@ -14,8 +14,13 @@ func (p *Postgres) Reserve(tickets *models.Tickets) error {
 	return result.Error
 }
 
-func (p *Postgres) GetReservationByID(tickets *models.Tickets) error {
+func (p *Postgres) GetTicketsByID(tickets *models.Tickets) error {
 	result := p.db.Preload("TicketItems.Passenger").Where("id = ? AND user_id = ?", tickets.ID, tickets.UserID).First(tickets)
+	return result.Error
+}
+
+func (p *Postgres) GetAllTickets(userID *uuid.UUID, tickets *[]models.Tickets) error {
+	result := p.db.Preload("TicketItems.Passenger").Where("user_id = ?", userID).Find(tickets)
 	return result.Error
 }
 

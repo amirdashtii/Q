@@ -13,6 +13,7 @@ type FlightServiceContract interface {
 type TicketServiceContract interface {
 	CreateReservation(flightID string, passengerIDs []uuid.UUID, ticket *models.Tickets) error
 	GetTicketsByID(ticket *models.Tickets) error
+	GetAllTickets(userID *uuid.UUID, ticket *[]models.Tickets) error
 	UpdateTickets(ticket *models.Tickets) error
 	CancelTicket(ticket *models.Tickets) error
 }

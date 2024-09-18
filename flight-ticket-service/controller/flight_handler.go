@@ -35,7 +35,7 @@ func AddFlightServiceRoutes(e *echo.Echo) {
 
 	// // Reservation Routes
 	// reservationGroup := e.Group("/reservations")
-	// reservationGroup.GET("/:id", h.GetReservationByIdHandler)   // دریافت جزئیات یک رزرو
+	// reservationGroup.GET("/:id", h.GetTicketsByIDHandler)   // دریافت جزئیات یک رزرو
 
 	// // Payment Status Routes
 	// paymentGroup := e.Group("/payment-status")
