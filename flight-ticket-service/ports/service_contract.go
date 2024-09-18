@@ -12,13 +12,14 @@ type FlightServiceContract interface {
 
 type TicketServiceContract interface {
 	CreateReservation(flightID string, passengerIDs []uuid.UUID, ticket *models.Tickets) error
-	GetReservationByID(ticket *models.Tickets) error
-	UpdateReservation(ticket *models.Tickets) error
+	GetTicketsByID(ticket *models.Tickets) error
+	UpdateTickets(ticket *models.Tickets) error
 	CancelTicket(ticket *models.Tickets) error
 }
+
 type PaymentServiceContract interface {
 	PayTicket(ticket *models.Tickets, paymentGateway string) (string, error)
-	VerifyTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) (models.Transaction, error)
+	VerifyTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error)
 }
 
 type PassengerServiceContract interface {

@@ -52,7 +52,7 @@ func (s *TicketService) CreateReservation(flightID string, passengerIDs []uuid.U
 
 	return s.db.Reserve(tickets)
 }
-func (s *TicketService) GetReservationByID(tickets *models.Tickets) error {
+func (s *TicketService) GetTicketsByID(tickets *models.Tickets) error {
 	return s.db.GetReservationByID(tickets)
 }
 
@@ -64,21 +64,27 @@ func (s *TicketService) CancelTicket(tickets *models.Tickets) error {
 	if tickets.Status == "cancelled" {
 		return errors.New("ticket already cancelled")
 	}
-	
+
 	if err := s.pr.CancelTicketWithProvider(len(tickets.TicketItems), tickets.FlightID.String()); err != nil {
 		return err
 	}
 
-	tickets.Status = "cancelled"
-	return s.db.UpdateReservation(tickets)
+	updateItem := make(map[string]interface{})
+	updateItem["status"] = "cancelled"
+	return s.db.UpdateReservation(tickets.ID, updateItem)
 }
 
-func (s *TicketService) UpdateReservation(tickets *models.Tickets) error {
+func (s *TicketService) UpdateTickets(tickets *models.Tickets) error {
 	updateItem := make(map[string]interface{})
 
-	updateItem["status"] = tickets.Status
+	if tickets.Status != "" {
+		updateItem["status"] = tickets.Status
+	}
+	if tickets.ReferenceNumber != "" {
+		updateItem["reference_number"] = tickets.ReferenceNumber
+	}
 
-	return s.db.UpdateReservation(tickets)
+	return s.db.UpdateReservation(tickets.ID, updateItem)
 }
 
 func addFlightAndPassengersToTicket(tickets *models.Tickets, fp models.ProviderFlight, passengers []models.Passenger) error {

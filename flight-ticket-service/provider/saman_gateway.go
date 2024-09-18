@@ -3,7 +3,6 @@ package provider
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -11,11 +10,11 @@ import (
 )
 
 var (
-	terminalID               string
-	bankUrl                  string
-	banksendTokenUrl         string
-	bankVerifyTransactionUrl string
-	// bankReverseTransactionUrl string
+	terminalID                string
+	bankUrl                   string
+	banksendTokenUrl          string
+	bankVerifyTransactionUrl  string
+	bankReverseTransactionUrl string
 )
 
 type SamanGateway struct {
@@ -27,7 +26,7 @@ func NewSamanGateway() *SamanGateway {
 	bankUrl = os.Getenv("BANK_URL")
 	banksendTokenUrl = os.Getenv("BANK_SEND_TOKEN_URL")
 	bankVerifyTransactionUrl = os.Getenv("BANK_VERIFY_TRANSACTION_URL")
-	// bankReverseTransactionUrl = os.Getenv("BANK_REVERSE_TRANSACTION_URL")
+	bankReverseTransactionUrl = os.Getenv("BANK_REVERSE_TRANSACTION_URL")
 
 	tr := &http.Transport{}
 	cl := &http.Client{
@@ -76,24 +75,20 @@ func (m *SamanGateway) CreatePayment(tickets *models.Tickets, phoneNumber string
 	return response, nil
 }
 
-func (m *SamanGateway) VerifyTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) (models.Transaction, error) {
+func (m *SamanGateway) VerifyTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error) {
 	var transaction models.Transaction
 	reqBody := models.VerifyTransactionRequest{
-		MID: "134756366",
-		// RefNum: "f0e05013-1ebc-4d8c-8356-922fa4f954e5",
-		// MID:    receivedPaymentRequest.MID,
+		MID:    receivedPaymentRequest.MID,
 		RefNum: receivedPaymentRequest.RefNum,
 	}
 
 	jsonBody, err := json.Marshal(reqBody)
 	if err != nil {
-		fmt.Println("1")
 		return transaction, err
 	}
 
 	req, err := http.NewRequest(http.MethodPost, bankVerifyTransactionUrl, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		fmt.Println("2")
 		return transaction, err
 	}
 
@@ -101,22 +96,46 @@ func (m *SamanGateway) VerifyTransaction(receivedPaymentRequest *models.Received
 
 	res, err := m.client.Do(req)
 	if err != nil {
-		fmt.Println("3")
 		return transaction, err
 	}
 	defer res.Body.Close()
 
 	err = json.NewDecoder(res.Body).Decode(&transaction)
 	if err != nil {
-		fmt.Println("4")
 		return transaction, err
 	}
-	fmt.Println(transaction)
 
 	return transaction, nil
 }
 
-func (m *SamanGateway) ReverseTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) error {
+func (m *SamanGateway) ReverseTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error) {
+	var transaction models.Transaction
+	reqBody := models.VerifyTransactionRequest{
+		MID:    receivedPaymentRequest.MID,
+		RefNum: receivedPaymentRequest.RefNum,
+	}
 
-	return nil
+	jsonBody, err := json.Marshal(reqBody)
+	if err != nil {
+		return transaction, err
+	}
+
+	req, err := http.NewRequest(http.MethodPost, bankReverseTransactionUrl, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return transaction, err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+
+	res, err := m.client.Do(req)
+	if err != nil {
+		return transaction, err
+	}
+	defer res.Body.Close()
+
+	err = json.NewDecoder(res.Body).Decode(&transaction)
+	if err != nil {
+		return transaction, err
+	}
+	return transaction, nil
 }

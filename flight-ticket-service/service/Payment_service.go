@@ -8,65 +8,55 @@ import (
 	"github.com/amirdashtii/Q/flight-ticket-service/ports"
 	"github.com/amirdashtii/Q/flight-ticket-service/provider"
 	"github.com/amirdashtii/Q/flight-ticket-service/repositories"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
 type PaymentService struct {
-	db   ports.RepositoryContracts
-	pr   ports.FlightProviderContract
-	pgpr ports.PaymentGatewayProviderContract
+	db             ports.RepositoryContracts
+	ticketService  ports.TicketServiceContract
+	flightprovider ports.FlightProviderContract
+	paymentGetway  ports.PaymentGatewayProviderContract
 }
 
 func NewPaymentService() *PaymentService {
 	db := repositories.NewPostgres()
-	pr := provider.NewProviderClient()
-	pgpr := provider.NewSamanGateway()
+	ticketService := NewTicketService()
+	flightprovider := provider.NewProviderClient()
+	paymentGetway := provider.NewSamanGateway()
 
 	return &PaymentService{
-		db:   db,
-		pr:   pr,
-		pgpr: pgpr,
+		db:             db,
+		ticketService:  ticketService,
+		flightprovider: flightprovider,
+		paymentGetway:  paymentGetway,
 	}
 }
 
-var (
-// terminalID       string
-// bankUrl          string
-// banksendTokenUrl string
-// bankVerifyTransactionUrl  string
-// bankReverseTransactionUrl string
-)
-
 func (s *PaymentService) PayTicketBySaman(tickets *models.Tickets) (string, error) {
-	var flight models.ProviderFlight
-	// var user models.User
-
-	seats := len(tickets.TicketItems)
+	var pFlight models.ProviderFlight
 
 	if err := s.db.GetReservationByID(tickets); err != nil {
 		return "", err
 	}
 	flightID := tickets.FlightID.String()
+	seats := len(tickets.TicketItems)
 
-	if err := s.pr.RequestFlight(&flightID, &flight); err != nil {
+	if err := s.flightprovider.RequestFlight(&flightID, &pFlight); err != nil {
 		return "", err
 	}
 
-	if flight.RemainingSeat < seats {
+	if pFlight.RemainingSeat < seats {
 		return "", errors.New("not enough seats")
 	}
 
-	if err := s.pr.ReserveTicketWithProvider(seats, flightID); err != nil {
+	if err := s.flightprovider.ReserveTicketWithProvider(seats, flightID); err != nil {
 		return "", err
 	}
-	// TODO: change status
-	// tickets.Status = "reserved"
 
-	// TODO: get user
-	phoneNumber := "09123456789"
+	phoneNumber := ""
 
-	response, err := s.pgpr.CreatePayment(tickets, phoneNumber)
-
+	response, err := s.paymentGetway.CreatePayment(tickets, phoneNumber)
 	if err != nil {
 		return "", err
 	}
@@ -75,11 +65,7 @@ func (s *PaymentService) PayTicketBySaman(tickets *models.Tickets) (string, erro
 		return "", errors.New(models.BankErrorMessage[response.ErrorCode])
 	}
 	paymentLink := os.Getenv("BANK_SEND_TOKEN_URL") + "?token=" + response.Token
-	// pay
-	// PayTicket(tickets)
-	// cancel if not pay
 
-	// save to database
 	return paymentLink, nil
 
 }
@@ -90,7 +76,7 @@ func (s *PaymentService) PayTicket(tickets *models.Tickets, paymentGateway strin
 	return "", errors.New("payment gateway not found")
 }
 
-func (s *PaymentService) VerifyTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) (models.Transaction, error) {
+func (s *PaymentService) VerifyTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error) {
 
 	if receivedPaymentRequest.State != "OK" {
 		return models.Transaction{}, errors.New(models.BankErrorMessage[receivedPaymentRequest.Status])
@@ -106,7 +92,7 @@ func (s *PaymentService) VerifyTransaction(receivedPaymentRequest *models.Receiv
 	}
 
 	// call VerifyTransaction in bank whit RefNum and MID
-	transaction, err := s.pgpr.VerifyTransaction(receivedPaymentRequest)
+	transaction, err := s.paymentGetway.VerifyTransaction(receivedPaymentRequest)
 	if err != nil {
 		return models.Transaction{}, err
 	}
@@ -117,16 +103,40 @@ func (s *PaymentService) VerifyTransaction(receivedPaymentRequest *models.Receiv
 		return models.Transaction{}, errors.New(transaction.ResultDescription)
 	}
 
+	if err := s.db.CreatePaymentReceipt(receivedPaymentRequest); err != nil {
+		return models.Transaction{}, err
+	}
 	// if the amount of the transaction is equal to the amount of the order
 	// then we can update the status of the order to payed
 	// and save the transaction to the database
-	if transaction.PurchaseInfo.AffectiveAmount == transaction.PurchaseInfo.OrginalAmount {
-		// TODO: update status to payed
-		// TODO: save transaction to database
+	if transaction.TransactionDetail.AffectiveAmount == transaction.TransactionDetail.OrginalAmount {
+		var tickets models.Tickets
+		reservationID, err := uuid.Parse(receivedPaymentRequest.ResNum)
+
+		if err != nil {
+			return models.Transaction{}, err
+		}
+
+		tickets.ID = reservationID
+
+		tickets.Status = "payed"
+		tickets.ReferenceNumber = transaction.TransactionDetail.RefNum
+		if err := s.ticketService.UpdateTickets(&tickets); err != nil {
+			return models.Transaction{}, err
+		}
+
 	} else {
 		// otherwise if the amount of the transaction is not equal to the amount of the order
 		// then we should reverse the transaction
-		// TODO: reverse transaction
+		transaction, err := s.paymentGetway.ReverseTransaction(receivedPaymentRequest)
+		if err != nil {
+			return models.Transaction{}, err
+		}
+
+		if transaction.ResultCode != 0 {
+			return models.Transaction{}, errors.New(transaction.ResultDescription)
+		}
+
 	}
 
 	return transaction, nil

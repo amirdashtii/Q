@@ -2,19 +2,20 @@ package repositories
 
 import (
 	"github.com/amirdashtii/Q/flight-ticket-service/models"
+	"github.com/google/uuid"
 )
 
-func (p *Postgres) Reserve(reservation *models.Tickets) error {
-	err := p.db.Create(reservation).Error
+func (p *Postgres) Reserve(tickets *models.Tickets) error {
+	err := p.db.Create(tickets).Error
 	if err != nil {
 		return err
 	}
-	result := p.db.Preload("TicketItems.Passenger").Find(reservation)
+	result := p.db.Preload("TicketItems.Passenger").Find(tickets)
 	return result.Error
 }
 
-func (p *Postgres) GetReservationByID(reservation *models.Tickets) error {
-	result := p.db.Preload("TicketItems.Passenger").Where("id = ? AND user_id = ?", reservation.ID, reservation.UserID).First(reservation)
+func (p *Postgres) GetReservationByID(tickets *models.Tickets) error {
+	result := p.db.Preload("TicketItems.Passenger").Where("id = ? AND user_id = ?", tickets.ID, tickets.UserID).First(tickets)
 	return result.Error
 }
 
@@ -24,7 +25,9 @@ func (p *Postgres) GetTicketsByRefNum(resNum string) error {
 	return result.Error
 }
 
-func (p *Postgres) UpdateReservation(reservation *models.Tickets) error {
-	result := p.db.Updates(reservation)
+func (p *Postgres) UpdateReservation(id uuid.UUID, updateItem map[string]interface{}) error {
+	var ticket models.Tickets
+	ticket.ID = id
+	result := p.db.Model(ticket).Updates(updateItem)
 	return result.Error
 }

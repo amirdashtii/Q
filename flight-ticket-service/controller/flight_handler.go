@@ -27,14 +27,6 @@ func AddFlightServiceRoutes(e *echo.Echo) {
 	flightGroup := e.Group("/flights")
 	flightGroup.GET("", h.GetFlightsHandler)
 	flightGroup.GET("/:id", h.GetFlightByIDHandler)
-	// flightGroup.GET("/:id/status", h.GetFlightStatusHandler)   // پیگیری وضعیت پرواز
-
-	// // Ticket Routes
-	// ticketGroup := e.Group("/tickets")
-	// ticketGroup.POST("/reserve", h.ReserveTicketHandler)        // رزرو بلیت
-	// ticketGroup.POST("/cancel", h.CancelTicketHandler)          // لغو رزرو بلیت
-	// ticketGroup.POST("/pay", h.PayTicketHandler)                // پرداخت بلیت
-	// ticketGroup.PATCH("/update", h.UpdateTicketHandler)         // تغییر یا به وزرسانی اطلاعات بلیت
 
 	// // User Reservation Routes
 	// userReservationGroup := e.Group("/user")

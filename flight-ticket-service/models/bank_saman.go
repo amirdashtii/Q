@@ -16,7 +16,7 @@ type Response struct {
 	ErrorDesc string `json:"errorDesc"`
 }
 
-type ReceivedPaymentRequest struct {
+type PaymentReceipt struct {
 	MID       string `json:"MID" form:"MID"`
 	State     string `json:"State" form:"State"`
 	Status    string `json:"Status" form:"Status"`
@@ -36,6 +36,25 @@ type VerifyTransactionRequest struct {
 	RefNum string `json:"RefNum"`
 }
 
+type TransactionDetail struct {
+	AffectiveAmount float64
+	HashedPan       string
+	MaskedPan       string
+	OrginalAmount   float64
+	RRN             string
+	RefNum          string
+	StraceDate      string
+	StraceNo        string
+	TerminalNumber  float64
+}
+
+type Transaction struct {
+	ResultCode        int
+	ResultDescription string
+	Success           bool
+	TransactionDetail TransactionDetail
+}
+
 var BankErrorMessage = map[string]string{
 	"1":  "canceled by user",
 	"2":  "ok",
@@ -47,33 +66,4 @@ var BankErrorMessage = map[string]string{
 	"11": "terminal not found",
 	"12": "multi settle policy errors",
 	"21": "token required",
-}
-
-type PurchaseInfo struct {
-    AffectiveAmount float64
-    FunctionCode    int
-    OrginalAmount   float64
-    RRN             string
-    RefNum          string
-    Trace           string
-}
-
-type TransactionDetail struct {
-    AffectiveAmount float64
-    HashedPan       string
-    MaskedPan       string
-    OrginalAmount   float64
-    RRN             string
-    RefNum          string
-    StraceDate      string
-    StraceNo        string
-    TerminalNumber  float64
-}
-
-type Transaction struct {
-    PurchaseInfo       PurchaseInfo
-    ResultCode         int
-    ResultDescription  string
-    Success            bool
-    TransactionDetail  TransactionDetail
 }

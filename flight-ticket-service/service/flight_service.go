@@ -42,6 +42,10 @@ func (s *FlightService) GetFlights(flightReq *models.FlightSearchRequest, flight
 	return nil
 }
 
+func (s *FlightService) GetFlightByID(id *string, flight *models.ProviderFlight) error {
+	return s.pr.RequestFlight(id, flight)
+}
+
 func (s *FlightService) applyFilters(flights []models.ProviderFlight, filter string) []models.ProviderFlight {
 	var filteredFlights []models.ProviderFlight
 
@@ -141,6 +145,4 @@ func (s *FlightService) applySorting(flights []models.ProviderFlight, sortBy, so
 	return flights
 }
 
-func (s *FlightService) GetFlightByID(id *string, flight *models.ProviderFlight) error {
-	return s.pr.RequestFlight(id, flight)
-}
+

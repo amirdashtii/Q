@@ -28,8 +28,9 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 	// Ticket Routes
 	ticketGroup := e.Group("/tickets")
 	ticketGroup.Use(middleware.JwtMiddleware)
-	ticketGroup.POST("/reserve", h.ReserveTicketHandler)
-	ticketGroup.GET("/reserve/:id", h.GetReservationByIDHandler)
+	ticketGroup.POST("/", h.ReserveTicketHandler)
+	// ticketGroup.GET("/", h.GetAllTicketsHandler)
+	ticketGroup.GET("/:id", h.GetTicketsByIDHandler)
 	ticketGroup.POST("/cancel/:id", h.CancelTicketHandler)
 }
 
@@ -72,7 +73,7 @@ func (h *TicketHandler) ReserveTicketHandler(c echo.Context) error {
 	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})
 }
 
-func (h *TicketHandler) GetReservationByIDHandler(c echo.Context) error {
+func (h *TicketHandler) GetTicketsByIDHandler(c echo.Context) error {
 
 	var tickets models.Tickets
 
@@ -101,7 +102,7 @@ func (h *TicketHandler) GetReservationByIDHandler(c echo.Context) error {
 	}
 	tickets.ID = ticketID
 
-	if err := h.svc.GetReservationByID(&tickets); err != nil {
+	if err := h.svc.GetTicketsByID(&tickets); err != nil {
 		return c.JSON(http.StatusInternalServerError, echo.Map{"error": err.Error()})
 	}
 	return c.JSON(http.StatusOK, echo.Map{"tickets": tickets})

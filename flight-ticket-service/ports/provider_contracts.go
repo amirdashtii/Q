@@ -10,5 +10,6 @@ type FlightProviderContract interface {
 }
 type PaymentGatewayProviderContract interface {
 	CreatePayment(tickets *models.Tickets, phoneNumber string) (models.Response, error)
-	VerifyTransaction(receivedPaymentRequest *models.ReceivedPaymentRequest) (models.Transaction, error)
+	VerifyTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error)
+	ReverseTransaction(receivedPaymentRequest *models.PaymentReceipt) (models.Transaction, error)
 }

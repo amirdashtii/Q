@@ -81,7 +81,7 @@ func (h *PaymentHandler) PayTicketHandler(c echo.Context) error {
 
 func (h *PaymentHandler) PaymentSuccessTicketHandler(c echo.Context) error {
 
-	var receivedPaymentRequest models.ReceivedPaymentRequest
+	var receivedPaymentRequest models.PaymentReceipt
 
 	if err := c.Bind(&receivedPaymentRequest); err != nil {
 		return c.JSON(http.StatusBadRequest, echo.Map{"error": "Invalid request body"})

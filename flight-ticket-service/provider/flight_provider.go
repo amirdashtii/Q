@@ -92,7 +92,7 @@ func (pc *ProviderClient) RequestFlight(id *string, flight *models.ProviderFligh
 	}
 	defer resp.Body.Close()
 	var response FlightResponse
-	err = json.NewDecoder(resp.Body).Decode(flight)
+	err = json.NewDecoder(resp.Body).Decode(&response)
 	if err != nil {
 		return err
 	}
