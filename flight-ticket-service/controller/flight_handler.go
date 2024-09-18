@@ -28,19 +28,6 @@ func AddFlightServiceRoutes(e *echo.Echo) {
 	flightGroup.GET("", h.GetFlightsHandler)
 	flightGroup.GET("/:id", h.GetFlightByIDHandler)
 
-	// // User Reservation Routes
-	// userReservationGroup := e.Group("/user")
-	// userReservationGroup.Use(middleware.JwtMiddleware)
-	// userReservationGroup.GET("/reservations", h.ListUserReservationsHandler) // مشاهده رزروهای یک کاربر
-
-	// // Reservation Routes
-	// reservationGroup := e.Group("/reservations")
-	// reservationGroup.GET("/:id", h.GetTicketsByIDHandler)   // دریافت جزئیات یک رزرو
-
-	// // Payment Status Routes
-	// paymentGroup := e.Group("/payment-status")
-	// paymentGroup.GET("", h.GetPaymentStatusHandler)             // بررسی وضعیت پرداخت
-
 	// // Airline Routes
 	// airlineGroup := e.Group("/airlines")
 	// airlineGroup.GET("", h.ListAirlinesHandler)                 // لیست شرکت های هواپیمایی

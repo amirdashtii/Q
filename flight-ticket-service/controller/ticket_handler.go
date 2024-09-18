@@ -28,9 +28,9 @@ func AddTicketServiceRoutes(e *echo.Echo) {
 	// Ticket Routes
 	ticketGroup := e.Group("/tickets")
 	ticketGroup.Use(middleware.JwtMiddleware)
-	ticketGroup.POST("/", h.ReserveTicketHandler)
 	ticketGroup.GET("/:id", h.GetTicketsByIDHandler)
 	ticketGroup.GET("/", h.GetAllTicketsHandler)
+	ticketGroup.POST("/", h.ReserveTicketHandler)
 	ticketGroup.POST("/cancel/:id", h.CancelTicketHandler)
 }
 
