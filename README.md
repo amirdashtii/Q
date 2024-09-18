@@ -2,7 +2,7 @@
 
 ## Overview
 
-This super app is designed using a microservices architecture. Each service is independent, allowing for modular development, deployment, and scaling. The initial setup includes an authentication service and a flight provider service, with other services like ticket booking and payment, and more planned to be added over time.
+This super app is designed using a microservices architecture. Each service is independent, allowing for modular development, deployment, and scaling. The initial setup includes an authentication service, a flight provider service, and a flight ticket booking service. Other services like payment handling are integrated as well, with more planned to be added over time.
 
 ## Architecture
 
@@ -15,6 +15,8 @@ This super app is designed using a microservices architecture. Each service is i
 
 1. **Authentication Service**: Manages user registration, login, and authorization.
 2. **Flight Provider Service**: Generates random flight data for the next 30 days, manages flight capacity, and allows retrieving flight details by ID.
+3. **Flight Ticket Service**: Manages flight bookings, cancellations, and ticketing, allowing users to search for available flights, book tickets, and manage passengers.
+4. **Payment Service**: Integrates with payment gateways to handle ticket payments, offering functionality to pay for tickets and verify successful transactions.
 
 ## Prerequisites
 
@@ -47,6 +49,11 @@ For the flight provider service:
 cd flight-provider-service
 ```
 
+For the flight ticket service:
+```
+cd flight-ticket-service
+```
+
 ### Environment Configuration:
 Each service includes a `.env-sample` file that contains the required environment variables. You must rename this file to `.env` and fill in the required variables.
 
@@ -65,10 +72,6 @@ docker-compose up --build
 
 ## Inter-Service Communication
 - **API Calls**: Services expose RESTful APIs that other services can consume.
-
-## Deployment
-Services can be deployed independently using Docker or Kubernetes. Each service has its own Dockerfile and deployment configuration.
-
 
 ## Deployment
 Services can be deployed independently using Docker or Kubernetes. Each service has its own Dockerfile and deployment configuration.
