@@ -1,5 +1,7 @@
 # Q App Documentation
 
+[![LICENSE](https://img.shields.io/badge/LICENSE-GPL----3.0-green)](https://github.com/amirdashtii/Q/blob/main/LICENSE) 
+
 ## Overview
 
 This super app is designed using a microservices architecture. Each service is independent, allowing for modular development, deployment, and scaling. The initial setup includes an authentication service, a flight provider service, and a flight ticket booking service. Other services like payment handling are integrated as well, with more planned to be added over time.
